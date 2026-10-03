@@ -1,0 +1,37 @@
+{
+  "id": "LibraryTweaks",
+  "homepage": "https://github.com/JustAdumbPrsn/ZenLibraryTweaks",
+  "author": "JustADumbPrsn",
+  "name": "LibraryTweaks",
+  "description": "Adds additional features to the zen library",
+  "version": "1.0 for Zen 1.23b",
+  "createdAt": "2026-10-03",
+  "updatedAt": "2026-10-04",
+  "readme": "https://github.com/JustAdumbPrsn/ZenLibraryTweaks/blob/main/README.md",
+  "image": "",
+  "js": true,
+  "style": {
+    "chrome": "LibraryTweaks.css"
+  },
+  "scripts": {
+  "LibraryTweaks.uc.js": {
+    "name": "LibraryTweaks",
+    "description": "Adds additional features to the zen library",
+    "include": [
+      "chrome://browser/content/browser.xhtml"
+    ]
+  },
+  "welcome.uc.js": {
+    "name": "Welcome",
+    "description": "Welcome promo for LibraryTweaks",
+    "include": [
+      "chrome://browser/content/browser.xhtml"
+    ]
+  }
+},
+  "tags": [
+    "Javascript",
+    "Library"
+  ],
+  "fork": ["zen"]
+}

@@ -1,0 +1,33 @@
+/*
+ * LibraryTweaks v1.0 - by JustAdumbPrsn
+ *
+ * Styling for LibraryTweaks.uc.js. Everything here builds on the native
+ * zen-library.css tokens and classes (--zen-library-sprite-size,
+ * --zen-library-pill-bg, .zen-library-row, ...) rather than redefining them.
+ */
+
+zen-library {
+  --zen-library-bookmarks-icon: url("chrome://browser/skin/zen-icons/bookmark.svg");
+}
+
+/*
+ * Native tab icons are 36-frame sprite sheets (36 * size wide) that play when
+ * the tab is clicked. Bookmarks uses a single static icon, so it takes the
+ * normal icon width instead of the sheet width.
+ */
+.zen-library-tab[data-section="bookmarks"] .zen-library-tab-icon-image {
+  width: var(--zen-library-sprite-size);
+  background-image: var(--zen-library-bookmarks-icon);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/*
+ * The native click animation slides the sprite sheet sideways. On a single
+ * icon that would slide it out of view, so it is turned off here. The
+ * selector is deliberately more specific than the native animation rule.
+ */
+.zen-library-tab[data-section="bookmarks"][animate] .zen-library-tab-icon-image {
+  animation: none;
+}
