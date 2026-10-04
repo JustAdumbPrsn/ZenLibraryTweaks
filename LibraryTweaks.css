@@ -1,33 +1,327 @@
-/*
- * LibraryTweaks v1.0 - by JustAdumbPrsn
- *
- * Styling for LibraryTweaks.uc.js. Everything here builds on the native
- * zen-library.css tokens and classes (--zen-library-sprite-size,
- * --zen-library-pill-bg, .zen-library-row, ...) rather than redefining them.
- */
+/* Bookmarks */
 
-zen-library {
-  --zen-library-bookmarks-icon: url("chrome://browser/skin/zen-icons/bookmark.svg");
+[data-section="bookmarks"] :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
+  background-image: url("library-bookmarks-sprite.svg");
+}
+
+zen-library-bookmarks-section {
+  /* Keeps the drop background, which sits at z-index -1, inside the section. */
+  isolation: isolate;
+
+  /* The sidebar indents each folder level by the same amount. */
+  --zen-library-folder-indent: 14px;
+
+  /* Long lists only pay for the rows that are on screen. */
+  & .zen-library-row:not(.zen-library-folder-row, .zen-library-separator) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 56px;
+  }
+}
+
+/* Rows */
+
+/* Items that were cut stay dimmed until they are pasted. */
+.zen-library-row[cutting] {
+  opacity: 0.5;
+}
+
+/* The row a context menu was opened on stays highlighted while it is open. */
+.zen-library-row[context-active] {
+  background: var(--toolbarbutton-hover-background);
+}
+
+/* The native rule shows the "more" button for [menu-open], not this. */
+#zen-library-panel
+  .zen-library-row[context-active]
+  .zen-library-row-actions
+  toolbarbutton {
+  display: inline-flex;
+}
+
+/* History */
+
+/* The native rules for the history section, which are keyed to its tag. */
+zen-library-history-tweaks-section {
+  & .zen-library-visit-date {
+    display: none;
+  }
+
+  & .zen-library-row:hover {
+    & .zen-library-visit-url {
+      display: none;
+    }
+
+    & .zen-library-visit-date {
+      display: inline;
+    }
+  }
+}
+
+/* The recently closed tabs and clear history rows above the list. */
+.zen-library-shortcut {
+  &[disabled] {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  & .zen-library-row-icon {
+    -moz-context-properties: fill;
+    fill: currentColor;
+  }
+}
+
+/* The chevron that says the row opens a screen of its own. */
+.zen-library-shortcut-chevron {
+  width: 12px;
+  height: 12px;
+  margin-inline-start: auto;
+  opacity: 0.5;
+  -moz-context-properties: fill;
+  fill: currentColor;
+
+  &:dir(rtl) {
+    scale: -1 1;
+  }
 }
 
 /*
- * Native tab icons are 36-frame sprite sheets (36 * size wide) that play when
- * the tab is clicked. Bookmarks uses a single static icon, so it takes the
- * normal icon width instead of the sheet width.
+ * The history and the recently closed tabs sit side by side in a track that
+ * slides by one pane, so the closed tabs come in from the right.
  */
-.zen-library-tab[data-section="bookmarks"] .zen-library-tab-icon-image {
-  width: var(--zen-library-sprite-size);
-  background-image: var(--zen-library-bookmarks-icon);
-  background-size: contain;
-  background-position: center;
-  background-repeat: no-repeat;
+zen-library-history-tweaks-section {
+  overflow: clip;
+}
+
+.zen-library-pane-track {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: translate 0.3s cubic-bezier(0.36, 0.06, 0, 0.94);
+  }
+
+  zen-library-history-tweaks-section[closed-view] & {
+    translate: -100% 0;
+
+    &:dir(rtl) {
+      translate: 100% 0;
+    }
+  }
+}
+
+.zen-library-pane {
+  display: flex;
+  flex: 0 0 100%;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.zen-library-closed-header {
+  padding: 12px 10px 8px;
+  -moz-window-dragging: no-drag;
 }
 
 /*
- * The native click animation slides the sprite sheet sideways. On a single
- * icon that would slide it out of view, so it is turned off here. The
- * selector is deliberately more specific than the native animation rule.
+ * The buttons of a row only show while it is hovered, and are taller than a
+ * row of one line, so the row grew when they appeared. This is the height of
+ * a row with them: a button is its 18px icon and 8px of padding on each side,
+ * and the row adds its own 10px above and below.
  */
-.zen-library-tab[data-section="bookmarks"][animate] .zen-library-tab-icon-image {
-  animation: none;
+.zen-library-closed-list .zen-library-row {
+  box-sizing: border-box;
+  min-height: 54px;
+}
+
+.zen-library-closed-back {
+  font-weight: 600;
+}
+
+.zen-library-closed-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 10px 10px;
+  scrollbar-width: thin;
+  -moz-window-dragging: no-drag;
+}
+
+/* Folders */
+
+.zen-library-folder-row {
+  cursor: default;
+
+  & .zen-library-row-title {
+    font-weight: 600;
+  }
+}
+
+/*
+ * The artwork is the one the sidebar draws, colored through the
+ * --zen-folder-* variables. The glyph is smaller than its frame, so the
+ * margins put it where a bookmark's icon sits and leave the height to the text.
+ */
+.zen-library-folder-icon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin-block: -6px;
+  margin-inline: -4px -5px;
+  pointer-events: none;
+
+  & svg {
+    display: block;
+    filter: contrast(125%);
+  }
+
+  /* Sidebar folders only show the dots while a collapsed folder is active. */
+  & .dots {
+    opacity: 0;
+  }
+}
+
+/* The open and closed look from zen-folder-icon.inc.css. */
+.zen-library-folder-icon svg {
+  @media (prefers-reduced-motion: no-preference) {
+    & g,
+    & rect,
+    & path {
+      transition:
+        transform 0.3s cubic-bezier(0.42, 0, 0, 1),
+        opacity 0.3s cubic-bezier(0.42, 0, 0, 1);
+    }
+  }
+
+  &[state="open"] .back {
+    transform: skewX(16deg) translate(-4px, 2px) scale(0.85);
+  }
+
+  &[state="open"] :is(.front, .dots, .icon) {
+    transform: skewX(-16deg) translate(8px, 2px) scale(0.85);
+  }
+}
+
+.zen-library-folder-children {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-inline-start: var(--zen-library-folder-indent);
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: grid-template-rows 0.2s ease;
+  }
+
+  .zen-library-folder[open] > & {
+    grid-template-rows: 1fr;
+  }
+}
+
+.zen-library-folder-items {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Separators */
+
+/* A row of its own, so it gets the hover and right click target of the rest. */
+.zen-library-separator {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 0;
+  height: 10px;
+  margin-block: 0;
+  padding-block: 0;
+
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: color-mix(in srgb, currentColor 15%, transparent);
+  }
+}
+
+/* Drag and drop */
+
+/* Placed from script like #zen-dragover-background, behind the rows. */
+.zen-library-drop-background {
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--zen-primary-color);
+}
+
+/*
+ * Placed from script with --indicator-left, --indicator-width and top, like
+ * #zen-drag-indicator. It sits in the Library, not in a row, so the rows
+ * cannot clip it.
+ */
+.zen-library-drop-indicator {
+  --zen-drag-indicator-height: 2px;
+  --zen-drag-indicator-bg: color-mix(
+    in srgb,
+    var(--zen-primary-color) 50%,
+    light-dark(rgba(0, 0, 0, 0.85), rgba(255, 255, 255, 0.95)) 50%
+  );
+
+  position: fixed;
+  z-index: 1000;
+  background: var(--zen-drag-indicator-bg);
+  pointer-events: none;
+  border-radius: 5px;
+
+  /* The small circle at the leading edge of the line. */
+  &::before {
+    content: "";
+    position: absolute;
+    height: calc(2 * var(--zen-drag-indicator-height));
+    width: calc(2 * var(--zen-drag-indicator-height));
+    border: var(--zen-drag-indicator-height) solid var(--zen-drag-indicator-bg);
+    border-radius: 50%;
+    background: transparent;
+  }
+
+  &[orientation="horizontal"] {
+    left: calc(
+      var(--indicator-left) + 2 * var(--zen-drag-indicator-height) + 4px
+    );
+    width: calc(
+      var(--indicator-width) - 2 * var(--zen-drag-indicator-height) - 4px
+    );
+    height: var(--zen-drag-indicator-height);
+
+    &::before {
+      left: calc(-2 * var(--zen-drag-indicator-height));
+      top: 50%;
+      transform: translate(calc(-1 * var(--zen-drag-indicator-height)), -50%);
+    }
+  }
+}
+
+/* The drag image is a copy of the row, drawn like the tab Zen drags. */
+.zen-library-row[drag-image] {
+  background: var(
+    --tab-background-color-selected,
+    light-dark(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.2))
+  );
+  box-shadow: var(--tab-box-shadow-selected, none);
+  color: var(--tab-text-color-selected, inherit);
+  border-radius: calc(
+    var(--border-radius-medium, 8px) / var(--zen-squircle-value, 1)
+  );
+  opacity: 1;
+}
+
+/* A separator's image is a small pill with the line across its middle. */
+.zen-library-separator[drag-image] {
+  padding-inline: 8px;
+
+  &::after {
+    background: color-mix(in srgb, currentColor 40%, transparent);
+  }
+}
+
+/* On macOS the dragged row waits out of sight for the image to land on it. */
+.zen-library-row[landing] {
+  visibility: hidden;
 }
