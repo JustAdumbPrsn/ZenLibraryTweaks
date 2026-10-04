@@ -1,0 +1,49 @@
+[
+    {
+        "type": "text",
+        "label": "ZenLibraryTweaks",
+        "margin": "30px 0 30px 0",
+        "size": "20px"
+    },
+    {
+        "type": "separator",
+        "label": "Optional Features",
+        "margin": "15px 0 15px 0"
+    },
+    {
+        "type": "checkbox",
+        "property": "librarytweaks-coloricons-disabled",
+        "label": "Disable Library Icons Styling",
+        "margin": "12px 0 4px 0"
+    },
+    {
+        "type": "text",
+        "label": "Disables the custom color styling for the animated library icons",
+        "margin": "0 0 12px 24px",
+        "size": "12px"
+    },
+    {
+        "type": "checkbox",
+        "property": "",
+        "label": "Text Color Lock",
+        "margin": "12px 0 4px 0"
+    },
+    {
+        "type": "text",
+        "label": "",
+        "margin": "0 0 12px 24px",
+        "size": "12px"
+    },
+    {
+        "type": "checkbox",
+        "property": "",
+        "label": "",
+        "margin": "12px 0 4px 0"
+    },
+    {
+        "type": "text",
+        "label": "",
+        "margin": "0 0 12px 24px",
+        "size": "12px"
+    }
+]

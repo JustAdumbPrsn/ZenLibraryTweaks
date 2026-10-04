@@ -1,5 +1,12 @@
-/* Bookmarks */
+/* All library sprite icons use the folder design language colors by default */
+@media not (-moz-pref("librarytweaks-coloricons-disabled")) {
+  :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
+    --stroke: var(--zen-folder-stroke) !important;
+    --fill: var(--zen-folder-front-bgcolor) !important;
+  }
+}
 
+/* Bookmarks */
 [data-section="bookmarks"] :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
   background-image: url("library-bookmarks-sprite.svg");
 }
@@ -199,6 +206,15 @@ zen-library-history-tweaks-section {
 
   &[state="open"] :is(.front, .dots, .icon) {
     transform: skewX(-16deg) translate(8px, 2px) scale(0.85);
+  }
+
+  /* Position the special-folder icon image on the folder's front face,
+     matching zen-folders.css which does the same at translate(8.5px, 10.5px). */
+  & image {
+    -moz-context-properties: fill, fill-opacity;
+    fill: color-mix(in srgb, var(--zen-folder-stroke) 50%, currentColor);
+    fill-opacity: 0.9;
+    transform: translate(8.5px, 10.5px);
   }
 }
 

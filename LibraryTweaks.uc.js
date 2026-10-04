@@ -1464,14 +1464,28 @@
         if (!rawIcon) {
           return;
         }
+        const { bookmarks } = lazy.PlacesUtils;
+        const SPECIAL_FOLDER_ICONS = {
+          [bookmarks.toolbarGuid]:
+            "chrome://browser/skin/zen-icons/selectable/star-1.svg",
+          [bookmarks.menuGuid]:
+            "chrome://browser/skin/zen-icons/selectable/inbox.svg",
+        };
         for (const icon of this.querySelectorAll(".zen-library-folder-icon")) {
           let svg = icon.firstElementChild;
           if (!svg) {
             svg = rawIcon.cloneNode(true);
             icon.append(svg);
           }
-          const open = icon.closest(".zen-library-folder").hasAttribute("open");
+          const folderEl = icon.closest(".zen-library-folder");
+          const open = folderEl.hasAttribute("open");
           svg.setAttribute("state", open ? "open" : "close");
+          const guid = folderEl.querySelector(".zen-library-folder-row")
+            ?.libraryItem?.guid;
+          const svgImage = svg.querySelector(".icon image");
+          if (svgImage) {
+            svgImage.setAttribute("href", SPECIAL_FOLDER_ICONS[guid] ?? "");
+          }
         }
       }
 
