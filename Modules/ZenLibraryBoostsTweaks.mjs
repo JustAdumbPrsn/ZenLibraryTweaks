@@ -4,6 +4,8 @@
 
 import { LIT_URL } from "./LibraryTweaksShared.mjs";
 
+const PREF_BOOSTS_STYLING_DISABLED = "librarytweaks-boosts-styling-disabled";
+
 const lazy = {};
 
 ChromeUtils.defineLazyGetter(lazy, "lit", () =>
@@ -15,24 +17,92 @@ ChromeUtils.defineESModuleGetters(lazy, {
     "resource:///modules/zen/boosts/ZenBoostsManager.sys.mjs",
 });
 
+/**
+ * Checks whether the boosts styling tweak is disabled via preference.
+ * Handles boolean (false = 0), integer (0), and string values.
+ */
+function isBoostsStylingDisabled() {
+  try {
+    return Services.prefs.getBoolPref(PREF_BOOSTS_STYLING_DISABLED);
+  } catch {
+    try {
+      return Services.prefs.getIntPref(PREF_BOOSTS_STYLING_DISABLED) !== 0;
+    } catch {
+      try {
+        const val = Services.prefs.getStringPref(PREF_BOOSTS_STYLING_DISABLED);
+        return val === "1" || val.toLowerCase() === "true";
+      } catch {
+        return false;
+      }
+    }
+  }
+}
+
+/**
+ * Finds all instances of the boosts section (across light DOM and shadow roots)
+ * and requests a re-render.
+ */
+function refreshBoostsSections() {
+  // 1. Direct document query
+  for (const section of document.querySelectorAll("zen-library-boosts-section")) {
+    section.requestUpdate();
+  }
+
+  // 2. Query inside <zen-library> (including ShadowRoot)
+  for (const lib of document.querySelectorAll("zen-library")) {
+    lib.requestUpdate();
+    const roots = [lib, lib.shadowRoot].filter(Boolean);
+    for (const root of roots) {
+      for (const section of root.querySelectorAll("zen-library-boosts-section")) {
+        section.requestUpdate();
+      }
+    }
+  }
+}
+
+// Module-level observer: stays alive for the window and notifies all instances immediately
+const boostsPrefObserver = {
+  observe(subject, topic, data) {
+    if (!data || data === PREF_BOOSTS_STYLING_DISABLED) {
+      refreshBoostsSections();
+    }
+  },
+};
+
+try {
+  Services.prefs.addObserver(PREF_BOOSTS_STYLING_DISABLED, boostsPrefObserver);
+  window.addEventListener(
+    "unload",
+    () => {
+      try {
+        Services.prefs.removeObserver(
+          PREF_BOOSTS_STYLING_DISABLED,
+          boostsPrefObserver
+        );
+      } catch (_) {}
+    },
+    { once: true }
+  );
+} catch (ex) {
+  console.error("Failed to register boosts pref observer", ex);
+}
 
 /**
  * Groups boost rows under domain headers, the same way the history section
- * groups visits under date headers. Because `#boosts()` and `#renderBoost()`
- * are private methods on the native class we cannot call them from outside,
- * so we re-read from gZenBoostsManager directly and re-render rows with a
- * template that mirrors the native one.
- *
- * While a search query is active the list is short, so we leave it flat
- * (delegate to the original) just as history leaves search results flat.
+ * groups visits under date headers.
  */
 export function hookBoostsSection() {
   customElements
     .whenDefined("zen-library-boosts-section")
     .then(BoostsSection => {
-      const { html, repeat } = lazy.lit;
       const proto = BoostsSection.prototype;
-      const original = proto.renderItems;
+      if (proto._boostsTweaksHooked) {
+        return;
+      }
+      proto._boostsTweaksHooked = true;
+
+      const { html, repeat } = lazy.lit;
+      const originalRenderItems = proto.renderItems;
 
       function renderBoostRow(boost) {
         return html`
@@ -72,9 +142,9 @@ export function hookBoostsSection() {
       }
 
       proto.renderItems = function () {
-        // Flat list while searching — let the native render handle it.
-        if (this.searchQuery) {
-          return original.call(this);
+        // If tweaks are disabled via preference or when searching, delegate to native render
+        if (isBoostsStylingDisabled() || this.searchQuery) {
+          return originalRenderItems.call(this);
         }
 
         // Collect boosts grouped by domain, mirroring native #boosts().
@@ -100,7 +170,7 @@ export function hookBoostsSection() {
         }
 
         if (!byDomain.size) {
-          return original.call(this);
+          return originalRenderItems.call(this);
         }
 
         // Domains and their boosts sorted alphabetically.
@@ -126,6 +196,9 @@ export function hookBoostsSection() {
           `
         );
       };
+
+      // Force a refresh right after hooking in case it rendered before the hook resolved
+      refreshBoostsSections();
     })
     .catch(ex =>
       console.error("Failed to hook boosts section", ex)

@@ -13,12 +13,36 @@
     {
         "type": "checkbox",
         "property": "librarytweaks-coloricons-disabled",
-        "label": "Disable Library Icons Styling",
+        "label": "Disable Custom Library Icons Styling",
         "margin": "12px 0 4px 0"
     },
     {
         "type": "text",
         "label": "Disables the custom color styling for the animated library icons",
+        "margin": "0 0 12px 24px",
+        "size": "12px"
+    },
+    {
+        "type": "checkbox",
+        "property": "librarytweaks-boosts-styling-disabled",
+        "label": "Disable Boosts Tweaks",
+        "margin": "12px 0 4px 0"
+    },
+    {
+        "type": "text",
+        "label": "Disables the styling for boosts section",
+        "margin": "0 0 12px 24px",
+        "size": "12px"
+    },
+    {
+        "type": "checkbox",
+        "property": "librarytweaks-history-styling-disabled",
+        "label": "Disable History Tweaks",
+        "margin": "12px 0 4px 0"
+    },
+    {
+        "type": "text",
+        "label": "Disables Recently Closed Tabs & Clear Recent History... custom buttons",
         "margin": "0 0 12px 24px",
         "size": "12px"
     }

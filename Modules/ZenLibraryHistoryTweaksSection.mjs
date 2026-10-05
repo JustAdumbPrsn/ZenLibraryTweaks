@@ -8,6 +8,8 @@ import { LIT_URL, STRINGS, formatUrl } from "./LibraryTweaksShared.mjs";
 
 const HISTORY_SECTION_URL =
   "moz-src:///zen/library/sections/ZenLibraryHistorySection.mjs";
+const PREF_HISTORY_STYLING_DISABLED = "librarytweaks-history-styling-disabled";
+
 // Session store tells this when the closed tabs or windows lists change.
 const CLOSED_OBJECTS_TOPIC = "sessionstore-closed-objects-changed";
 // What the native recently closed menu reads to decide whose tabs it lists.
@@ -36,6 +38,22 @@ const closedAtFormat = new Intl.DateTimeFormat(undefined, {
   timeStyle: "short",
 });
 
+/**
+ * Checks whether the history styling tweak is disabled via preference.
+ * Handles both boolean (false = 0) and integer (0) values.
+ */
+function isHistoryStylingDisabled() {
+  try {
+    return Services.prefs.getBoolPref(PREF_HISTORY_STYLING_DISABLED, false);
+  } catch {
+    try {
+      return Services.prefs.getIntPref(PREF_HISTORY_STYLING_DISABLED, 0) !== 0;
+    } catch {
+      return false;
+    }
+  }
+}
+
 export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
   static render(library) {
     return html`
@@ -48,6 +66,14 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
   }
 
   #observer = { observe: () => this.#readClosedTabs() };
+  #prefObserver = {
+    observe: (subject, topic, data) => {
+      if (!data || data === PREF_HISTORY_STYLING_DISABLED) {
+        this.#onPrefChanged();
+      }
+    },
+  };
+
   // What the closed tabs list shows, as `{tab, index, source}`.
   #closedEntries = [];
   #showingClosed = false;
@@ -56,13 +82,33 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
     super.connectedCallback();
     this.addEventListener("keydown", this.#onKeyDown);
     Services.obs.addObserver(this.#observer, CLOSED_OBJECTS_TOPIC);
-    this.#readClosedTabs();
+    Services.prefs.addObserver(
+      PREF_HISTORY_STYLING_DISABLED,
+      this.#prefObserver
+    );
+    if (!isHistoryStylingDisabled()) {
+      this.#readClosedTabs();
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener("keydown", this.#onKeyDown);
     Services.obs.removeObserver(this.#observer, CLOSED_OBJECTS_TOPIC);
+    Services.prefs.removeObserver(
+      PREF_HISTORY_STYLING_DISABLED,
+      this.#prefObserver
+    );
+  }
+
+  #onPrefChanged() {
+    if (isHistoryStylingDisabled()) {
+      this.#setShowingClosed(false);
+      this.removeAttribute("closed-view");
+    } else {
+      this.#readClosedTabs();
+    }
+    this.requestUpdate();
   }
 
   // Reading the closed tabs
@@ -109,6 +155,9 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
   }
 
   #readClosedTabs() {
+    if (isHistoryStylingDisabled()) {
+      return;
+    }
     try {
       this.#closedEntries = this.#buildClosedEntries();
     } catch (ex) {
@@ -144,6 +193,9 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
   }
 
   #onKeyDown = event => {
+    if (isHistoryStylingDisabled()) {
+      return;
+    }
     if (event.key === "Escape" && this.#showingClosed) {
       // Goes back a step instead of closing the Library.
       event.preventDefault();
@@ -197,7 +249,6 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
   #undoTab({ tab, index, source }) {
     const store = window.SessionStore;
     if (typeof source.sourceClosedId === "number") {
-      // The name of this one changed between releases.
       const undo =
         store.undoClosedTabFromClosedWindow ??
         store.undoCloseTabFromClosedWindow;
@@ -227,14 +278,6 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
     this.#readClosedTabs();
   }
 
-  /**
-   * Opens like the history rows do: a plain click brings it back in
-   * front and closes the Library, and Ctrl/Cmd or a middle click brings it
-   * back behind the tab that is open and leaves the Library up.
-   *
-   * @param {Function} restore - Brings the tab or folder back
-   * @param {MouseEvent|KeyboardEvent} [event] - What asked for it
-   */
   #reopen(restore, event) {
     const background =
       !!event && (event.getModifierState("Accel") || event.button === 1);
@@ -257,7 +300,6 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
       } catch (ex) {
         console.error("Failed to restore", ex);
       }
-      // Restoring a tab selects it.
       if (previous?.isConnected) {
         gBrowser.selectedTab = previous;
       }
@@ -267,13 +309,6 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
     }
   }
 
-  /**
-   * A tab drags as a link, like a visit does.
-   *
-   * @param {DragEvent} event
-   * @param {string} title
-   * @param {string} url
-   */
   #onDragStart(event, title, url) {
     if (!url) {
       event.preventDefault();
@@ -288,8 +323,6 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
     // eslint-disable-next-line mozilla/valid-services
     Services.zen.playHapticFeedback();
   }
-
-  // Clear history
 
   #clearHistory() {
     document.getElementById("Tools:Sanitize")?.doCommand();
@@ -336,12 +369,6 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
     `;
   }
 
-  /**
-   * The two buttons of a history row: forget it, and bring it back.
-   *
-   * @param {Function} onForget
-   * @param {function(MouseEvent): void} onReopen
-   */
   #renderRowActions(onForget, onReopen) {
     return html`
       <div class="zen-library-row-actions">
@@ -461,7 +488,7 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
 
   renderItems() {
     const items = super.renderItems();
-    if (this.searchQuery) {
+    if (isHistoryStylingDisabled() || this.searchQuery) {
       return items;
     }
     return html`
@@ -484,12 +511,10 @@ export class ZenLibraryHistoryTweaksSection extends ZenLibraryHistorySection {
     `;
   }
 
-  /**
-   * The history, with the closed tabs one screen to its right. The base
-   * class renders the search box and the list, which go in the first pane
-   * untouched, so its scrolling and search keep working.
-   */
   render() {
+    if (isHistoryStylingDisabled()) {
+      return super.render();
+    }
     return html`
       <div class="zen-library-pane-track">
         <div
