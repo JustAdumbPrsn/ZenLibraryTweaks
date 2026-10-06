@@ -13,11 +13,11 @@
 * Adds bookmarks section for the library so you can now manage your bookmarks directly from the library :)
 * In case you are wondering, the bookmarks section behaves almost the same as the native bookmarks panel.
 
-<img width="1502" height="901" alt="image" src="https://github.com/user-attachments/assets/40de083e-576a-47f3-8270-eb577c8ca3b1" />
+  <img width="1502" height="901" alt="image" src="https://github.com/user-attachments/assets/40de083e-576a-47f3-8270-eb577c8ca3b1" />
 
 * Also a nice custom animated icon for bookmarks! In my opinion it looks really nice.
 
-https://github.com/user-attachments/assets/14fb909a-3c80-434b-8125-307efadd8b30
+  https://github.com/user-attachments/assets/14fb909a-3c80-434b-8125-307efadd8b30
 
 * Supports search based on bookmark keyword too.
 * And also supports filtering based on Tags, and Workspaces.
