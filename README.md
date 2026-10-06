@@ -1,10 +1,15 @@
-<h1 align="center">ZenLibraryTweaks</h1>
+<h1 align="center">Zen Library Tweaks</h1>
+<p align="center"><em>Adds features to the zen library</em></p>
+
+###
 
 <div align="center">
     <a href="https://zen-browser.app/">
-        <img width="120" alt="zen-badge-dark" src="https://github.com/user-attachments/assets/d6ab3ddf-6630-4062-92d0-22497d2a3f9a" />
+        <img width="160" alt="zen-badge-dark" src="https://github.com/user-attachments/assets/d6ab3ddf-6630-4062-92d0-22497d2a3f9a" />
     </a>
 </div>
+
+###
 
 <img width="1917" height="1196" alt="image" src="https://github.com/user-attachments/assets/66956774-081e-4268-966c-a65bcb741ebb" />
 
