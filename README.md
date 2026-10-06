@@ -6,7 +6,7 @@
     </a>
 </div>
 
-<img width="1917" height="1198" alt="image" src="https://github.com/user-attachments/assets/7e0aaf29-3a2b-4673-b6ba-9ef3df0b73c5" />
+<img width="1917" height="1196" alt="image" src="https://github.com/user-attachments/assets/66956774-081e-4268-966c-a65bcb741ebb" />
 
 ## Bookmarks Section
 
