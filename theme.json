@@ -4,9 +4,9 @@
   "author": "JustADumbPrsn",
   "name": "ZenLibraryTweaks",
   "description": "Adds additional features to the zen library",
-  "version": "1.1 for Zen 1.23b",
+  "version": "1.2 for Zen 1.23b",
   "createdAt": "2026-10-03",
-  "updatedAt": "2026-10-04",
+  "updatedAt": "2026-10-06",
   "readme": "https://github.com/JustAdumbPrsn/ZenLibraryTweaks/blob/main/README.md",
   "image": "",
   "preferences": "preferences.json",
@@ -22,7 +22,7 @@
       "chrome://browser/content/browser.xhtml"
     ]
   },
-  "welcome.uc.js": {
+  "Modules/Welcome/welcome.uc.js": {
     "name": "Welcome",
     "description": "Welcome promo for LibraryTweaks",
     "include": [
