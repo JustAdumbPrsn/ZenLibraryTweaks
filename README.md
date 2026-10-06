@@ -43,33 +43,29 @@ https://github.com/user-attachments/assets/14fb909a-3c80-434b-8125-307efadd8b30
   <img width="375" height="263" alt="image" src="https://github.com/user-attachments/assets/34a49c3f-4726-4a2b-8d7f-3ec8361f6ba6" />
 
 * This tweak to the boosts section can be turned off in the mod preferences.
-
 ## Custom Library Icon Styling
 
 * Instead of using the colors of the native Library, I have changed the colors to match the colors of a folder in Zen.
+* This tweak to the icons can be turned off in the mod preferences.
 
-<table>
-  <tr>
-    <td align="center" valign="top">
-      <strong>Default Icon Style</strong>
-      <br><br>
-      <img
-        src="https://github.com/user-attachments/assets/5fcbf064-38f0-4658-9b74-1ff87f50d93f"
-        alt="Default Icon Style"
-        width="136"
-      />
-    </td>
-    <td align="center" valign="top">
-      <strong>Tweaks (Matching Folder Styling)</strong>
-      <br><br>
-      <img
-        src="https://github.com/user-attachments/assets/603eb0f0-43d0-43f5-9640-c8d1d0be44a2"
-        alt="Tweaks (Matching Folder Styling)"
-        width="137"
-      />
-    </td>
-  </tr>
-</table>
+  <table>
+    <thead>
+      <tr>
+        <th align="center">Default Icon Style (Preference Off)</th>
+        <th align="center">Tweaked (Matching Folder Styling)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td align="center">
+          <img src="https://github.com/user-attachments/assets/5fcbf064-38f0-4658-9b74-1ff87f50d93f" width="180" alt="Default Icon Style" />
+        </td>
+        <td align="center">
+          <img src="https://github.com/user-attachments/assets/603eb0f0-43d0-43f5-9640-c8d1d0be44a2" width="180" alt="Tweaks (Matching Folder Styling)" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
 ## Installation
 
