@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            LibraryTweaks
 // @description     Tweaks for the Zen Library
-// @version         v1.3
+// @version         v1.4
 // @author          JustAdumbPrsn
 // @include         main
 // ==/UserScript==
