@@ -172,7 +172,7 @@
           );
         }
 
-        modifiers.applyOrder(library);
+        modifiers.applySections(library);
 
         if (savedTab && savedTab in library.zenLibrarySections) {
           library.activeTab = savedTab;

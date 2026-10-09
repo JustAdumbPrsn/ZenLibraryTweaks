@@ -24,7 +24,7 @@ const TEXT = {
   "library-space-routing": "Routing",
   "library-space-routing-search-placeholder": "Search routes",
   "library-space-routing-filter-title": "Filter routes",
-  "library-space-routing-new": "New route",
+  "library-space-routing-new": "New",
   "library-space-routing-routes": "Routes",
   "library-space-routing-external": "Links from other apps (Mail, Slack…)",
   "library-space-routing-empty": "No routes yet. Add one to open a site in a space every time, like work sites in Work.",

@@ -383,6 +383,331 @@ zen-library-history-tweaks-section {
   --zen-library-tab-shift-distance: 48px;
 }
 
+/*
+ * Remove button: a badge on the top-left corner of a tab's dashed outline. The outline
+ * has a 10px radius, so its line passes about 3.5px in from the corner, which is where
+ * the badge is centered.
+ */
+#zen-library-sidebar-tabs {
+  & .lt-remove-button {
+    display: none;
+  }
+
+  &[editing] .lt-remove-button {
+    display: block;
+    position: absolute;
+    top: 3.5px;
+    left: 3.5px;
+    translate: -50% -50%;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--zen-library-tab-border-color);
+    border-radius: 50%;
+    background: var(--zen-library-tab-drag-bg);
+    cursor: default;
+
+    /* The minus */
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      translate: -50% -50%;
+      width: 6px;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--zen-library-tab-border-color);
+    }
+
+    &:hover {
+      background: var(--zen-library-tab-border-color);
+
+      &::before {
+        background: var(--zen-library-tab-drag-bg);
+      }
+    }
+
+    &[disabled] {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+  }
+}
+
+/* A tab dragged over the box of removed sections */
+#zen-library-sidebar-tabs[editing] .zen-library-tab[dragging][removing] {
+  scale: 0.8;
+  opacity: 0.8;
+}
+
+/* Edit mode pane (content area) */
+
+/*
+ * While editing, the pane replaces whatever section the content area was showing.
+ * The pane itself is shown and hidden with the `hidden` attribute, like the native sections.
+ */
+zen-library[lt-editing] #zen-library-content > :not(#zen-library-edit-pane) {
+  display: none !important;
+}
+
+#zen-library-edit-pane {
+  --lt-edit-pane-padding: 16px;
+  --lt-edit-border-color: var(--zen-folder-stroke, var(--zen-accent-button-color));
+  --lt-edit-badge-bg: light-dark(rgb(250, 250, 252), rgb(28, 29, 33)); /* as on the tabs */
+
+  box-sizing: border-box;
+  padding: var(--lt-edit-pane-padding);
+
+  @media (-moz-pref("librarytweaks-coloricons-disabled")) {
+    --lt-edit-border-color: var(--zen-accent-button-color);
+  }
+}
+
+/* Same dashed outline the tabs get while editing, equally inset from the content box. */
+.lt-removed-box {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  border: 2px dashed color-mix(in srgb, var(--lt-edit-border-color) 55%, transparent);
+  border-radius: 10px;
+
+  &[empty] {
+    & .lt-removed-body {
+      align-items: center;
+      justify-content: center;
+    }
+
+    & .lt-removed-grid {
+      display: none;
+    }
+  }
+
+  /* A tab is being dragged over it. */
+  &[over] {
+    border-color: var(--lt-edit-border-color);
+    background: color-mix(in srgb, var(--lt-edit-border-color) 10%, transparent);
+  }
+
+  &:not([empty]) .lt-removed-placeholder {
+    display: none;
+  }
+}
+
+/* The heading of the box, centered over it. */
+.lt-removed-title {
+  flex: none;
+  padding: 16px 16px 0;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+.lt-removed-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* The empty state, laid out like the Media section's opt-in, without its card. */
+.lt-removed-placeholder {
+  /* Raise or lower to resize the icon. */
+  --lt-placeholder-icon-size: 40px;
+
+  padding: 22px 22px 40px;
+  text-align: center;
+
+  & .lt-removed-placeholder-icon {
+    display: block;
+    width: var(--lt-placeholder-icon-size);
+    height: var(--lt-placeholder-icon-size);
+    margin: 2px auto 12px;
+    -moz-context-properties: fill, stroke;
+    fill: var(--lt-edit-border-color);
+    stroke: var(--lt-edit-border-color);
+  }
+
+  & h3 {
+    margin: 0 0 8px;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  & p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    opacity: 0.85;
+  }
+}
+
+/*
+ * The removed sections as a grid of tiles that look like the tabs they came from.
+ *
+ * A tile is as wide as a tab: the sidebar is 110px wide (#zen-library-side) and a tab has
+ * an 8px margin on each side. The free space is shared evenly, between the rows and above
+ * and below them, and between the columns and beside them. The gap and the padding are
+ * the least each of those gets, so a list that does not fit scrolls with the same spacing.
+ */
+.lt-removed-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, calc(110px - 2 * 8px));
+  justify-content: space-evenly;
+  align-content: space-evenly;
+  gap: 16px;
+  padding: 16px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.lt-removed-chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 0;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: grab;
+  touch-action: none;
+
+  /* The dashed outline a tab has while editing */
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    border: 2px dashed var(--lt-edit-border-color);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, currentColor 5%, transparent);
+
+    & .lt-restore-button {
+      background: var(--lt-edit-border-color);
+
+      &::before,
+      &::after {
+        background: var(--lt-edit-badge-bg);
+      }
+    }
+  }
+
+  &:hover:active {
+    scale: 0.96;
+  }
+
+  /* The slot a chip is being dragged out of */
+  &[dragging] {
+    opacity: 0.35;
+    scale: 1;
+  }
+
+  /* Keyboard focus: Enter or Space restores the section. */
+  &:focus-visible {
+    outline: 2px solid var(--lt-edit-border-color);
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * The chip being dragged back to the sidebar. It lives in the library, outside the edit
+ * pane, so it declares the variables the pane normally provides.
+ */
+.lt-chip-ghost {
+  --lt-edit-border-color: var(--zen-folder-stroke, var(--zen-accent-button-color));
+  --lt-edit-badge-bg: light-dark(rgb(250, 250, 252), rgb(28, 29, 33));
+
+  @media (-moz-pref("librarytweaks-coloricons-disabled")) {
+    --lt-edit-border-color: var(--zen-accent-button-color);
+  }
+
+  position: absolute;
+  z-index: 100;
+  box-sizing: border-box;
+  margin: 0;
+  font-size: 14px;
+  cursor: grabbing;
+  pointer-events: none;
+  scale: 1.04;
+  background: light-dark(rgb(250, 250, 252), rgb(28, 29, 33));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+
+  &::after {
+    opacity: 1;
+  }
+
+  & .lt-restore-button {
+    display: none;
+  }
+}
+
+/* The remove button of a tab, with a plus: same badge on the same spot of the outline. */
+.lt-restore-button {
+  position: absolute;
+  top: 3.5px;
+  left: 3.5px;
+  translate: -50% -50%;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--lt-edit-border-color);
+  border-radius: 50%;
+  background: var(--lt-edit-badge-bg);
+  /* Half of the badge sits outside the chip, so it has to be hit-testable itself
+     to count as part of it. It is inside the chip, so clicks and drags still reach it. */
+  pointer-events: auto;
+
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    border-radius: 1px;
+    background: var(--lt-edit-border-color);
+  }
+
+  &::before {
+    width: 6px;
+    height: 2px;
+  }
+
+  &::after {
+    width: 2px;
+    height: 6px;
+  }
+}
+
+/*
+ * Same sprite as the tabs. The native rules size it from --zen-library-sprite-size, which
+ * a tab sets for itself, so the chip sets it too instead of overriding those rules.
+ */
+.lt-removed-chip-icon {
+  --zen-library-sprite-size: 28px;
+
+  width: var(--zen-library-sprite-size);
+  height: var(--zen-library-sprite-size);
+  overflow: clip;
+}
+
+.lt-removed-chip-label {
+  text-align: center;
+}
+
 /* Space Routing */
 
 zen-library-space-routing-section {
@@ -592,4 +917,22 @@ zen-library-space-routing-section {
   height: 16px;
   -moz-context-properties: fill;
   fill: currentColor;
+}
+/* "New" button in the Space Routing header: airplane icon before the label.
+ * The icon is a mask so it follows the text color; the label itself is set via
+ * textContent, so the icon has to live in a pseudo-element. */
+.zen-library-route-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &::before {
+    content: "";
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    background-color: currentColor;
+    -moz-context-properties: fill, stroke;
+    mask: url("Modules/Icons/airplane.svg") center / contain no-repeat;
+  }
 }
