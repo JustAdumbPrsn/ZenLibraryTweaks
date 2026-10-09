@@ -8,7 +8,12 @@
 
 /* Bookmarks */
 [data-section="bookmarks"] :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
-  background-image: url("library-bookmarks-sprite.svg");
+  background-image: url("Modules/Icons/library-bookmarks-sprite.svg");
+}
+
+/* Space Routing */
+[data-section="space-routing"] :is(.zen-library-tab-icon-image, .empty-state-icon-image) {
+  background-image: url("Modules/Icons/library-space-routing-sprite.svg");
 }
 
 zen-library-bookmarks-section {
@@ -38,10 +43,7 @@ zen-library-bookmarks-section {
 }
 
 /* The native rule shows the "more" button for [menu-open], not this. */
-#zen-library-panel
-  .zen-library-row[context-active]
-  .zen-library-row-actions
-  toolbarbutton {
+#zen-library-panel .zen-library-row[context-active] .zen-library-row-actions toolbarbutton {
   display: inline-flex;
 }
 
@@ -62,96 +64,6 @@ zen-library-history-tweaks-section {
       display: inline;
     }
   }
-}
-
-/* The recently closed tabs and clear history rows above the list. */
-.zen-library-shortcut {
-  &[disabled] {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-
-  & .zen-library-row-icon {
-    -moz-context-properties: fill;
-    fill: currentColor;
-  }
-}
-
-/* The chevron that says the row opens a screen of its own. */
-.zen-library-shortcut-chevron {
-  width: 12px;
-  height: 12px;
-  margin-inline-start: auto;
-  opacity: 0.5;
-  -moz-context-properties: fill;
-  fill: currentColor;
-
-  &:dir(rtl) {
-    scale: -1 1;
-  }
-}
-
-/*
- * The history and the recently closed tabs sit side by side in a track that
- * slides by one pane, so the closed tabs come in from the right.
- */
-zen-library-history-tweaks-section {
-  overflow: clip;
-}
-
-.zen-library-pane-track {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-
-  @media (prefers-reduced-motion: no-preference) {
-    transition: translate 0.3s cubic-bezier(0.36, 0.06, 0, 0.94);
-  }
-
-  zen-library-history-tweaks-section[closed-view] & {
-    translate: -100% 0;
-
-    &:dir(rtl) {
-      translate: 100% 0;
-    }
-  }
-}
-
-.zen-library-pane {
-  display: flex;
-  flex: 0 0 100%;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-}
-
-.zen-library-closed-header {
-  padding: 12px 10px 8px;
-  -moz-window-dragging: no-drag;
-}
-
-/*
- * The buttons of a row only show while it is hovered, and are taller than a
- * row of one line, so the row grew when they appeared. This is the height of
- * a row with them: a button is its 18px icon and 8px of padding on each side,
- * and the row adds its own 10px above and below.
- */
-.zen-library-closed-list .zen-library-row {
-  box-sizing: border-box;
-  min-height: 54px;
-}
-
-.zen-library-closed-back {
-  font-weight: 600;
-}
-
-.zen-library-closed-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 0 10px 10px;
-  scrollbar-width: thin;
-  -moz-window-dragging: no-drag;
 }
 
 /* Folders */
@@ -340,4 +252,344 @@ zen-library-history-tweaks-section {
 /* On macOS the dragged row waits out of sight for the image to land on it. */
 .zen-library-row[landing] {
   visibility: hidden;
+}
+
+/* Glance */
+
+/*
+ * A Glance opened from the Library dims the window behind it, the way the
+ * media preview does. Its backdrop is already there to catch the click that
+ * closes it, so it only needs a color.
+ */
+#zen-glance-detached .zen-glance-detached-backdrop {
+  --zen-library-glance-dim: light-dark(
+    rgba(0, 0, 0, 0.25),
+    rgba(0, 0, 0, 0.45)
+  );
+
+  background: var(--zen-library-glance-dim);
+}
+
+/* The manager marks the host while it closes. */
+#zen-glance-detached[fade-out] .zen-glance-detached-backdrop {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #zen-glance-detached .zen-glance-detached-backdrop {
+    animation: zen-library-glance-dim-in 0.25s linear backwards;
+    transition: opacity 0.15s ease-out;
+  }
+}
+
+@keyframes zen-library-glance-dim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Sections list tweaks */
+
+/* Compact mode: icon-only sidebar tabs */
+#zen-library-sidebar-tabs[compact] .zen-library-tab label {
+  display: none;
+}
+
+/* Edit mode button in footer */
+#zen-library-footer #zen-library-footer-edit-sections[checked] {
+  color: var(--zen-primary-color);
+}
+
+/* Tab animations and transitions for rearrange (matching Spaces section cards) */
+#zen-library-sidebar-tabs {
+  --zen-library-tab-shift-distance: 68px;
+  --zen-library-tab-drag-bg: light-dark(rgb(250, 250, 252), rgb(28, 29, 33));
+
+  & .zen-library-tab {
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        translate 0.2s cubic-bezier(0.2, 0, 0, 1),
+        scale 0.2s ease,
+        opacity 0.2s ease;
+    }
+  }
+
+  &[no-transition] .zen-library-tab {
+    transition: none !important;
+  }
+
+  /* In edit mode, tabs show a dashed outline and grab cursor */
+  &[editing] .zen-library-tab {
+    cursor: grab;
+
+    /*
+     * Dashed 2px rounded border using the folder stroke color by default,
+     * or native --zen-accent-button-color when custom color icons are disabled.
+     */
+    --zen-library-tab-border-color: var(--zen-folder-stroke, var(--zen-accent-button-color));
+
+    @media (-moz-pref("librarytweaks-coloricons-disabled")) {
+      --zen-library-tab-border-color: var(--zen-accent-button-color);
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 10px;
+      border: 2px dashed var(--zen-library-tab-border-color, currentColor);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    &[dragging] {
+      cursor: grabbing;
+      scale: 1.04;
+      position: relative;
+      z-index: 10;
+      transition: none;
+
+      /*
+       * The tab is drawn over the others, so it paints a solid background of
+       * its own, and its hover layer is made solid too, to keep the tabs
+       * beneath it from showing through.
+       */
+      background: var(--zen-library-tab-drag-bg);
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+
+      &::before {
+        background: var(--zen-library-tab-drag-bg);
+        opacity: 1;
+      }
+
+      /* Keep the exact same dashed outline, just fully opaque */
+      &::after {
+        opacity: 1;
+      }
+    }
+
+    &[shift="up"] {
+      translate: 0 calc(-1 * var(--zen-library-tab-shift-distance));
+    }
+
+    &[shift="down"] {
+      translate: 0 var(--zen-library-tab-shift-distance);
+    }
+  }
+}
+
+#zen-library-sidebar-tabs[compact] {
+  --zen-library-tab-shift-distance: 48px;
+}
+
+/* Space Routing */
+
+zen-library-space-routing-section {
+  --zen-library-route-danger: light-dark(#9d2222, #d03535);
+
+  /* The rows are taller than the 34px the native rule reserves for them. */
+  & .zen-library-row {
+    contain: none;
+    content-visibility: visible;
+    cursor: default;
+  }
+
+  /* Editor. Not a .zen-library-row, so the fixed height and containment of
+     the rows cannot clip it. */
+  & .zen-library-route-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-block: 4px 8px;
+    padding: 14px;
+    border-radius: 16px;
+    background: var(--zen-library-pill-bg);
+    -moz-window-dragging: no-drag;
+
+    & h4 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+    }
+  }
+
+  & .zen-library-route-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+
+    & label {
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.6;
+    }
+  }
+
+  /* Spaces show their icon, an emoji or an image, before their name. */
+  & .zen-library-route-space-icon {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    -moz-context-properties: fill;
+    fill: currentColor;
+  }
+
+  /* The link icon is a plain glyph, so it takes the text color. */
+  & .zen-library-row-icon[symbolic] {
+    -moz-context-properties: fill;
+    fill: currentColor;
+    opacity: 0.7;
+  }
+
+  /* Nudged toward the icon, so the line reads as part of the title's. */
+  & .zen-library-row-subtitle {
+    margin-inline-start: 6px;
+  }
+
+  /* The arrow that says where the route goes. */
+  & .zen-library-route-arrow {
+    width: 12px;
+    height: 12px;
+    margin-inline-end: 4px;
+    vertical-align: -2px;
+    opacity: 0.7;
+    -moz-context-properties: fill;
+    fill: currentColor;
+  }
+
+  /* How the link is compared, a button of the row like the bin. */
+  & .zen-library-route-kind-label {
+    display: block;
+    padding: 8px 6px;
+    border-radius: var(--zen-library-radius);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    opacity: 0.7;
+  }
+
+  & .zen-library-route-kind:hover .zen-library-route-kind-label {
+    background-color: var(--toolbarbutton-background-color-hover);
+  }
+
+  & .zen-library-row-subtitle .zen-library-route-space-icon {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-inline-end: 4px;
+    line-height: 12px;
+    font-size: 11px;
+    vertical-align: -1px;
+  }
+
+  & .zen-library-route-input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 36px;
+    margin: 0;
+    padding: 0 12px;
+    border: none;
+    border-radius: var(--zen-library-radius);
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    color: inherit;
+    font: inherit;
+
+    &:focus-visible {
+      outline: 2px solid color-mix(in srgb, var(--zen-primary-color) 60%, transparent);
+    }
+  }
+
+  /*
+   * The space picker is a .zen-library-filter-button, which gives it the
+   * height, shape and hover of the Library's others. It only needs to fill the
+   * row, and to stand out from the editor, which has the same background.
+   */
+  & .zen-library-route-select {
+    width: 100%;
+    margin: 0;
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    text-align: start;
+
+    &:hover {
+      background: color-mix(in srgb, currentColor 14%, transparent);
+    }
+
+    & .zen-library-route-select-label {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    & .zen-library-route-select-chevron {
+      width: 12px;
+      height: 12px;
+      opacity: 0.6;
+    }
+  }
+
+  & .zen-library-route-editor .zen-library-filter-chip {
+    background: color-mix(in srgb, currentColor 8%, transparent);
+
+    &[active] {
+      background: color-mix(in srgb, currentColor 20%, transparent);
+    }
+  }
+
+  /* A pattern that does not compile is shown like the native dialog does. */
+  & .zen-library-route-input[invalid] {
+    color: var(--zen-library-route-danger) !important;
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--zen-library-route-danger);
+  }
+
+  /* Says what is wrong, beside the red text of the field. */
+  & .zen-library-route-error {
+    padding-inline: 4px;
+    color: var(--zen-library-route-danger);
+    font-size: 12px;
+  }
+
+  & .zen-library-route-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+
+    & button {
+      appearance: none;
+      margin: 0;
+      padding: 8px 14px;
+      border: none;
+      border-radius: var(--zen-library-radius);
+      background: color-mix(in srgb, currentColor 10%, transparent);
+      color: inherit;
+      font: inherit;
+      font-weight: 600;
+
+      &[primary] {
+        background: var(--zen-primary-color);
+        color: var(--zen-primary-color-contrast, white);
+      }
+
+      &[disabled] {
+        opacity: 0.5;
+      }
+    }
+  }
+}
+
+/* The menu of the space picker. It is in the window's popup set, not in the
+   section, and its icons are not sized by the menu itself. */
+.zen-library-route-menu :is(.menu-icon, .menu-iconic-icon) {
+  width: 16px;
+  height: 16px;
+  -moz-context-properties: fill;
+  fill: currentColor;
 }

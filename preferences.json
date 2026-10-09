@@ -36,13 +36,13 @@
     },
     {
         "type": "checkbox",
-        "property": "librarytweaks-history-styling-disabled",
-        "label": "Disable History Tweaks",
+        "property": "librarytweaks-sections-compact",
+        "label": "Compact Sections List",
         "margin": "12px 0 4px 0"
     },
     {
         "type": "text",
-        "label": "Disables Recently Closed Tabs & Clear Recent History... custom buttons",
+        "label": "Shows only icons in the library sidebar",
         "margin": "0 0 12px 24px",
         "size": "12px"
     }

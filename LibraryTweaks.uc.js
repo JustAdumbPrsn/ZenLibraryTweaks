@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name            LibraryTweaks
 // @description     Tweaks for the Zen Library
-// @version         v1.1
+// @version         v1.3
 // @author          JustAdumbPrsn
 // @include         main
 // ==/UserScript==
@@ -15,69 +15,49 @@
 
   const LIBRARY_ELEMENT = "zen-library";
   const LAST_TAB_PREF = "zen.library.last-tab";
-  // What Ctrl+B and the Bookmarks menu ask the sidebar controller to toggle.
   const BOOKMARKS_SIDEBAR_COMMAND = "viewBookmarksSidebar";
   const LIBRARY_ENABLED_PREF = "zen.library.enabled";
   const BOOKMARKS_SECTION_ID = "bookmarks";
 
-  // Where the modules are. They sit in a LibraryTweaks folder next to this
-  // script, wherever the script loader found it, unless this says otherwise.
   const MODULES_URL = null;
-  const MODULES_BASE = new URL(
-    "Modules/",
-    MODULES_URL ?? Components.stack.filename
-  ).href;
+  const MODULES_BASE = new URL("Modules/", MODULES_URL ?? Components.stack.filename).href;
 
   /**
-   * Loads a module into the window global, like the native sections are, so
-   * that the classes they share with Zen are the ones Zen uses. A module is
-   * only loaded once per window.
-   *
-   * @param {string} name - The file name of the module
-   * @returns {object} The exports of the module
+   * Loads an ES module into the window global.
+   * @param {string} name 
+   * @returns {object} Module exports
    */
   function loadModule(name) {
-    return ChromeUtils.importESModule(MODULES_BASE + name, {
-      global: "current",
-    });
+    return ChromeUtils.importESModule(MODULES_BASE + name, { global: "current" });
   }
 
-  // Registration
-
-  /**
-   * The sections added to the Library. `placement` positions the
-   * sidebar tab relative to another section id, and defaults to the end. A
-   * section with the id of a native one replaces it where it stands.
-   */
   const SECTIONS = [
     {
-      resolve: () =>
-        loadModule("ZenLibraryHistoryTweaksSection.mjs")
-          .ZenLibraryHistoryTweaksSection,
+      resolve: () => loadModule("ZenLibraryHistorySection.mjs").ZenLibraryHistoryTweaksSection,
     },
     {
-      resolve: () =>
-        loadModule("ZenLibraryBookmarksSection.mjs").ZenLibraryBookmarksSection,
+      resolve: () => loadModule("ZenLibraryBookmarksSection.mjs").ZenLibraryBookmarksSection,
       placement: { after: "history" },
+    },
+    {
+      resolve: () => loadModule("ZenLibrarySpaceRoutingSection.mjs").ZenLibrarySpaceRoutingSection,
+      placement: { after: "spaces" },
+      enabled: () => !window.gZenWorkspaces.privateWindowOrDisabled,
     },
   ];
 
   /**
-   * Returns a copy of a sections map with one section inserted. The Library
-   * renders its sidebar tabs in the insertion order of this object.
-   *
-   * @param {object} sections - The current id to section map
-   * @param {Function} Section - The section class to add
-   * @param {{before?: string, after?: string}} [placement]
-   * @returns {object} The new map
+   * Inserts a section into the sections map based on placement rules.
+   * @param {object} sections 
+   * @param {Function} Section 
+   * @param {{before?: string, after?: string}} [placement] 
+   * @returns {object} 
    */
   function withSection(sections, Section, { before, after } = {}) {
     if (!before && !after && Section.id in sections) {
       return { ...sections, [Section.id]: Section };
     }
-    const entries = Object.entries(sections).filter(
-      ([id]) => id !== Section.id
-    );
+    const entries = Object.entries(sections).filter(([id]) => id !== Section.id);
     let index = entries.length;
     const anchor = entries.findIndex(([id]) => id === (before ?? after));
     if (anchor !== -1) {
@@ -88,26 +68,24 @@
   }
 
   class LibraryTweaks {
-    static version = "v1.1";
-
-    /**
-     * The bookmarks data layer, for the Library sections and the console.
-     */
-    get BookmarksQuery() {
-      return loadModule("BookmarksQuery.mjs").BookmarksQuery;
-    }
-
     #Library = null;
     #originalGetInstance = null;
     #originalToggleSidebar = null;
+
+    get BookmarksQuery() {
+      return loadModule("ZenLibraryBookmarksData.mjs").BookmarksQuery;
+    }
 
     async init() {
       this.#Library = await customElements.whenDefined(LIBRARY_ELEMENT);
       this.#hookGetInstance();
       this.#hookSidebar();
-      loadModule("ZenLibraryBoostsTweaks.mjs").hookBoostsSection();
+      this.#hookLibraryClose();
+      
+      const modifiers = loadModule("ZenLibraryModifiers.mjs");
+      modifiers.hookBoostsSection();
+      modifiers.initSectionsTweaks();
 
-      // The Library already exists if this script loaded after it was opened.
       const existing = this.#Library.getInstance(false);
       if (existing) {
         this.#extend(existing);
@@ -126,11 +104,6 @@
       this.#Library = null;
     }
 
-    /**
-     * Wraps the native factory so a Library is extended as soon as it is
-     * created. At that point it is mounted but not yet rendered, so the first
-     * render already includes our sections.
-     */
     #hookGetInstance() {
       const tweaks = this;
       const original = this.#Library.getInstance;
@@ -138,29 +111,36 @@
 
       this.#Library.getInstance = function (createIfMissing = true) {
         const creating = createIfMissing && !this.instance;
-        // The constructor resets the pref to "history" when it does not know
-        // the saved section yet, so it has to be read beforehand.
-        const savedTab = creating
-          ? Services.prefs.getStringPref(LAST_TAB_PREF, "")
-          : "";
+        const savedTab = creating ? Services.prefs.getStringPref(LAST_TAB_PREF, "") : "";
         const library = original.call(this, createIfMissing);
+        
         if (creating && library) {
           tweaks.#extend(library, savedTab);
+          tweaks.#hookLibraryClose();
         }
         return library;
       };
     }
 
-    /**
-     * Makes Ctrl+B open the Library on Bookmarks, like Ctrl+H does for
-     * History, instead of the bookmarks sidebar. The sidebar still opens when
-     * the Library is turned off, and an open one is still closed as before.
-     */
-    #hookSidebar() {
-      const controller = window.SidebarController;
-      if (!controller) {
+    #hookLibraryClose() {
+      if (this.#Library._ltCloseHooked) {
         return;
       }
+      this.#Library._ltCloseHooked = true;
+      const originalAnimate = this.#Library.animateProgress;
+      
+      this.#Library.animateProgress = function (target, ...args) {
+        if (target === 0) {
+          loadModule("ZenLibraryModifiers.mjs").resetSectionsEditMode();
+        }
+        return originalAnimate.call(this, target, ...args);
+      };
+    }
+
+    #hookSidebar() {
+      const controller = window.SidebarController;
+      if (!controller) return;
+
       const tweaks = this;
       const original = controller.toggle;
       this.#originalToggleSidebar = original;
@@ -179,16 +159,12 @@
       };
     }
 
-    /**
-     * Adds every registered section to a Library. Errors are caught so that
-     * a problem here can never break the native Library.
-     *
-     * @param {HTMLElement} library - The zen-library instance
-     * @param {string} [savedTab] - The section the Library was last left on
-     */
     #extend(library, savedTab = "") {
       try {
-        for (const { resolve, placement } of SECTIONS) {
+        const modifiers = loadModule("ZenLibraryModifiers.mjs");
+
+        for (const { resolve, placement, enabled } of SECTIONS) {
+          if (enabled && !enabled()) continue;
           library.zenLibrarySections = withSection(
             library.zenLibrarySections,
             resolve(),
@@ -196,34 +172,35 @@
           );
         }
 
+        modifiers.applyOrder(library);
+
         if (savedTab && savedTab in library.zenLibrarySections) {
           library.activeTab = savedTab;
         }
 
         library.requestUpdate();
-        library.updateComplete.then(() => this.#applyTabLabels(library));
+        library.updateComplete.then(() => {
+          this.applyTabLabels(library);
+          modifiers.hookSections(library);
+        });
       } catch (ex) {
         console.error("Failed to extend the Library", ex);
       }
     }
 
-    /**
-     * Sets the sidebar tab text of our sections. Lit reuses tab elements by
-     * position and Fluent keeps the old text when an id has no message, so a
-     * tab could otherwise show the name of another section.
-     *
-     * @param {HTMLElement} library - The zen-library instance
-     */
-    #applyTabLabels(library) {
-      const { STRINGS } = loadModule("LibraryTweaksShared.mjs");
-      for (const { resolve } of SECTIONS) {
-        const Section = resolve();
-        const label = library.querySelector(
-          `.zen-library-tab[data-section="${Section.id}"] label`
-        );
-        // Replaced native sections keep the label Fluent gives them.
-        if (label && STRINGS[Section.label] !== undefined) {
+    applyTabLabels(library) {
+      const { STRINGS } = loadModule("ZenLibraryTweaksShared.mjs");
+      for (const [id, Section] of Object.entries(library.zenLibrarySections)) {
+        const tab = library.querySelector(`.zen-library-tab[data-section="${id}"]`);
+        const label = tab?.querySelector("label");
+        if (!label) continue;
+
+        if (STRINGS[Section.label] !== undefined) {
+          label.removeAttribute("data-l10n-id");
           label.textContent = STRINGS[Section.label];
+        } else {
+          const l10nId = Section.tabLabel ?? Section.label;
+          if (l10nId) document.l10n?.setAttributes(label, l10nId);
         }
       }
     }
