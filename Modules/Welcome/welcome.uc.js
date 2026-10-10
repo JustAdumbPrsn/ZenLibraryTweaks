@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name           LibraryTweaks Welcome
-// @version        v1.3
+// @version        v1.4
 // @description    Welcome page for LibraryTweaks
 // @author         JustAdumbPrsn
 // @include        main

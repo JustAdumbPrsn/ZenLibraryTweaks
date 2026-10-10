@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name            LibraryTweaks
+// @name            ZenLibraryTweaks
 // @description     Tweaks for the Zen Library
-// @version         v1.3
+// @version         v1.4
 // @author          JustAdumbPrsn
 // @include         main
 // ==/UserScript==
@@ -33,14 +33,14 @@
 
   const SECTIONS = [
     {
-      resolve: () => loadModule("ZenLibraryHistorySection.mjs").ZenLibraryHistoryTweaksSection,
+      resolve: () => loadModule("LibraryTweaksHistorySection.mjs").ZenLibraryHistoryTweaksSection,
     },
     {
-      resolve: () => loadModule("ZenLibraryBookmarksSection.mjs").ZenLibraryBookmarksSection,
+      resolve: () => loadModule("LibraryTweaksBookmarksSection.mjs").ZenLibraryBookmarksSection,
       placement: { after: "history" },
     },
     {
-      resolve: () => loadModule("ZenLibrarySpaceRoutingSection.mjs").ZenLibrarySpaceRoutingSection,
+      resolve: () => loadModule("LibraryTweaksSpaceRoutingSection.mjs").ZenLibrarySpaceRoutingSection,
       placement: { after: "spaces" },
       enabled: () => !window.gZenWorkspaces.privateWindowOrDisabled,
     },
@@ -73,7 +73,7 @@
     #originalToggleSidebar = null;
 
     get BookmarksQuery() {
-      return loadModule("ZenLibraryBookmarksData.mjs").BookmarksQuery;
+      return loadModule("LibraryTweaksBookmarksData.mjs").BookmarksQuery;
     }
 
     async init() {
@@ -82,9 +82,8 @@
       this.#hookSidebar();
       this.#hookLibraryClose();
       
-      const modifiers = loadModule("ZenLibraryModifiers.mjs");
-      modifiers.hookBoostsSection();
-      modifiers.initSectionsTweaks();
+      loadModule("LibraryTweaksBoostsSection.mjs").hookBoostsSection();
+      loadModule("LibraryTweaksSidebar.mjs").initSectionsTweaks();
 
       const existing = this.#Library.getInstance(false);
       if (existing) {
@@ -131,7 +130,7 @@
       
       this.#Library.animateProgress = function (target, ...args) {
         if (target === 0) {
-          loadModule("ZenLibraryModifiers.mjs").resetSectionsEditMode();
+          loadModule("LibraryTweaksSidebar.mjs").resetSectionsEditMode();
         }
         return originalAnimate.call(this, target, ...args);
       };
@@ -161,7 +160,7 @@
 
     #extend(library, savedTab = "") {
       try {
-        const modifiers = loadModule("ZenLibraryModifiers.mjs");
+        const sidebar = loadModule("LibraryTweaksSidebar.mjs");
 
         for (const { resolve, placement, enabled } of SECTIONS) {
           if (enabled && !enabled()) continue;
@@ -172,7 +171,7 @@
           );
         }
 
-        modifiers.applyOrder(library);
+        sidebar.applySections(library);
 
         if (savedTab && savedTab in library.zenLibrarySections) {
           library.activeTab = savedTab;
@@ -181,7 +180,8 @@
         library.requestUpdate();
         library.updateComplete.then(() => {
           this.applyTabLabels(library);
-          modifiers.hookSections(library);
+          sidebar.hookSections(library);
+          loadModule("LibraryTweaksSpacesSection.mjs").hookSpacesSection(library);
         });
       } catch (ex) {
         console.error("Failed to extend the Library", ex);
@@ -189,7 +189,7 @@
     }
 
     applyTabLabels(library) {
-      const { STRINGS } = loadModule("ZenLibraryTweaksShared.mjs");
+      const { STRINGS } = loadModule("LibraryTweaksShared.mjs");
       for (const [id, Section] of Object.entries(library.zenLibrarySections)) {
         const tab = library.querySelector(`.zen-library-tab[data-section="${id}"]`);
         const label = tab?.querySelector("label");

@@ -24,6 +24,18 @@
     },
     {
         "type": "checkbox",
+        "property": "librarytweaks-content-animate",
+        "label": "Animate Library Contents",
+        "margin": "12px 0 4px 0"
+    },
+    {
+        "type": "text",
+        "label": "Adds little animation to the library content when switching sections",
+        "margin": "0 0 12px 24px",
+        "size": "12px"
+    },
+    {
+        "type": "checkbox",
         "property": "librarytweaks-boosts-styling-disabled",
         "label": "Disable Boosts Tweaks",
         "margin": "12px 0 4px 0"
@@ -37,7 +49,7 @@
     {
         "type": "checkbox",
         "property": "librarytweaks-sections-compact",
-        "label": "Compact Sections List",
+        "label": "Force Compact Sections List",
         "margin": "12px 0 4px 0"
     },
     {
