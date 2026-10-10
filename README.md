@@ -26,28 +26,50 @@
 
 * Supports search based on bookmark keyword too.
 * And also supports filtering based on Tags, and Workspaces.
+* The bookmarks section also supports drag and drop to rearrange items.
 
   <img width="380" height="370" alt="image" src="https://github.com/user-attachments/assets/5a4c11c7-42ec-4687-a88b-e881fb9ab513" />
 
-## History Section
+## Space Routing Section
 
-* The history section now has Recently closed tabs and Clear recent history... buttons!
+* Adds space routing feature of zen directly in the library, making it more accessible to people :)
+* In my opinion routing is a great feature to have in the library.
 
-  <img width="382" height="163" alt="image" src="https://github.com/user-attachments/assets/2a832a2c-e145-4346-8c76-8ce2f5a984bb" />
+  <img width="1920" height="1140" alt="image" src="https://github.com/user-attachments/assets/c230d8ab-db70-4267-b6d2-eed727799d4b" />
 
-* Recently closed tabs button shows the items nicely.
+* I also made a cool icon and animation for this section, it is inspired by a boarding pass since zen uses an airplane to represent this feature.
 
-  <img width="1502" height="901" alt="image" src="https://github.com/user-attachments/assets/8388f324-5d75-4cfa-aac4-695889f6648e" />
+  https://github.com/user-attachments/assets/30a61c45-93d8-4fc7-9fb2-8cafa031ae56
 
-* This tweak to the history section can be turned off in the mod preferences.
+* It also neatly supports creating/editing routes.
+
+  <img width="383" height="405" alt="image" src="https://github.com/user-attachments/assets/f63ff7ee-f37b-4670-a013-4033970e6b6a" />
+
+## Customize Library Sidebar
+
+* You can now customize the sidebar of library in the edit mode by pressing the brush icon at the bottom.
+* This mode lets you add or remove sections as per your personal preferences.
+* The sections can be stored in the Storage box which appears, for ease of use.
+* This feature is one of my personal favorites :)
+
+  https://github.com/user-attachments/assets/2db510ed-7fe5-4a0f-9732-4b67559701ff
+
+## Glance for Library
+
+* You can now Alt + click on an item in History or Bookmarks and it will open the item in glance.
+* This feature is particularly useful when you want to view multiple links quickly.
+
+  https://github.com/user-attachments/assets/c71c9e2d-1873-4654-a65d-ab939b92e059
+
+* By the way you can also right click on an item in history and it will show options to either open in glance or open in split view.
 
 ## Boosts Section
 
 * The boosts section now shows the boosts grouped by website by a header of the URL on top.
+* This tweak to the boosts section can be turned off in the mod preferences.
 
   <img width="375" height="263" alt="image" src="https://github.com/user-attachments/assets/34a49c3f-4726-4a2b-8d7f-3ec8361f6ba6" />
 
-* This tweak to the boosts section can be turned off in the mod preferences.
 ## Custom Library Icon Styling
 
 * Instead of using the colors of the native Library, I have changed the colors to match the colors of a folder in Zen.
@@ -88,3 +110,5 @@
 - And paste this github repository link here (Use https://github.com/JustAdumbPrsn/ZenLibraryTweaks)
 
   <img width="357" height="85" alt="image" src="https://github.com/user-attachments/assets/a2ffb41e-c52a-4f00-b113-ab9c1d80833b" />
+
+- Done! Hope you find this mod useful 
