@@ -1,0 +1,284 @@
+#ltw-welcome-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  overflow: hidden;
+  -moz-window-dragging: drag;
+}
+
+#ltw-welcome-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  will-change: opacity;
+  /* The video is green; this turns it baby blue on the GPU, at no real cost. */
+  filter: hue-rotate(128deg) saturate(0.85) brightness(1.08);
+}
+
+#ltw-welcome,
+#ltw-welcome-start,
+#ltw-welcome-pages {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -moz-window-dragging: drag;
+}
+
+#ltw-welcome {
+  position: relative;
+  isolation: isolate;
+  --ltw-welcome-accent: var(
+    --zen-accent-button-color,
+    var(--zen-primary-color, #3e733e)
+  );
+  --ltw-welcome-button-bg: hsl(205 55% 52%);
+  --ltw-welcome-sidebar-bg: light-dark(#ffffff, #1c1c1e);
+  --ltw-welcome-content-bg: light-dark(#f6f6f8f5, #2b2b30ed);
+  --ltw-welcome-text-secondary: light-dark(
+    rgba(0, 0, 0, 0.6),
+    rgba(255, 255, 255, 0.6)
+  );
+}
+
+/* Feature pages stay in light mode; the attribute is removed on the picker
+ * page so light-dark() follows the real theme again. */
+#ltw-welcome-root[force-light] {
+  color-scheme: light;
+
+  & #ltw-welcome {
+    --ltw-welcome-accent: var(--ltw-welcome-button-bg);
+  }
+
+  & #ltw-welcome-page-sidebar-buttons .zen-big-accent-button.primary {
+    background: var(--ltw-welcome-button-bg) !important;
+    color: white !important;
+    fill: white !important;
+
+    &:hover {
+      filter: brightness(1.1);
+    }
+  }
+}
+
+#ltw-welcome-start {
+  flex-direction: column;
+  -moz-window-dragging: drag;
+
+  color: white;
+
+  #ltw-welcome-start-button {
+    opacity: 0;
+    list-style-image: url(chrome://browser/skin/zen-icons/forward.svg);
+    padding: 1em !important;
+    min-width: 100px;
+    background: var(--ltw-welcome-button-bg) !important;
+    /* The arrow is always white, in light and dark themes alike. */
+    color: white !important;
+    color-scheme: dark;
+    -moz-context-properties: fill, stroke, fill-opacity;
+    fill: white !important;
+    stroke: white !important;
+    fill-opacity: 1;
+
+    & * {
+      color: white !important;
+      fill: white !important;
+    }
+
+    will-change: transform;
+    transition: scale 0.15s ease-out;
+
+    &:hover {
+      scale: 1.03;
+      filter: brightness(1.1);
+    }
+
+    &:active {
+      scale: 1;
+      transform: none;
+    }
+  }
+
+  #ltw-welcome-title {
+    text-align: center;
+    font-size: 5.2rem;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    /* Layered (transformed) glyphs are drawn with grayscale AA on macOS;
+     * use it for the whole title so animating characters don't look bolder. */
+    -moz-osx-font-smoothing: grayscale;
+    transform: translateY(-5%);
+
+    & > span {
+      display: block;
+      white-space: nowrap;
+    }
+
+    .ltw-welcome-char {
+      display: inline-block;
+      opacity: 0;
+      will-change: transform;
+    }
+  }
+}
+
+#ltw-welcome-pages {
+  -moz-window-dragging: no-drag;
+  opacity: 0;
+  display: none;
+  justify-content: start;
+  align-items: stretch;
+  background: var(--ltw-welcome-content-bg);
+  color: light-dark(#111111, #ffffff);
+  border-radius: 1.4rem;
+  position: relative;
+  width: 86%;
+  height: 82%;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease;
+
+  @media (max-width: 1000px) {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+  }
+
+  #ltw-welcome-page-sidebar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    width: 38%;
+    height: 100%;
+    padding: 4rem 3.8rem 3.6rem;
+    box-sizing: border-box;
+    overflow: hidden;
+    background: var(--ltw-welcome-sidebar-bg);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.05);
+    transition: background-color 0.35s ease;
+  }
+
+  #ltw-welcome-back {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 2.2rem;
+    padding: 0;
+    appearance: none;
+    border: none;
+    background: none;
+    font: inherit;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ltw-welcome-accent);
+
+    &::before {
+      content: "";
+      width: 16px;
+      height: 16px;
+      background: url(chrome://browser/skin/zen-icons/back.svg) center / contain
+        no-repeat;
+      -moz-context-properties: fill;
+      fill: currentColor;
+    }
+
+    &[disabled] {
+      visibility: hidden;
+    }
+  }
+
+  #ltw-welcome-page-sidebar-content {
+    flex: 1;
+    position: relative;
+  }
+
+  .ltw-welcome-text {
+    position: absolute;
+    inset: 0;
+
+    & > * {
+      opacity: 0;
+      will-change: transform, opacity;
+    }
+
+    & h1 {
+      margin: 0 0 2.4rem;
+      font-size: 3rem;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    & p {
+      margin: 0 0 1.2rem;
+      font-size: 1.25rem;
+      line-height: 1.6;
+      color: var(--ltw-welcome-text-secondary);
+    }
+  }
+
+  #ltw-welcome-page-sidebar-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  #ltw-welcome-page-content {
+    flex: 1;
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-image: url(chrome://browser/content/zen-images/grain-bg.png);
+      opacity: 0.3;
+      mix-blend-mode: overlay;
+      pointer-events: none;
+    }
+  }
+
+  .ltw-welcome-page {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 2.5rem;
+    padding: 3rem 4rem;
+    box-sizing: border-box;
+
+    &[exiting] {
+      pointer-events: none;
+    }
+  }
+
+  .ltw-welcome-icon-button {
+    background: light-dark(rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.12)) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+  }
+
+  .ltw-welcome-button-icon {
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+}

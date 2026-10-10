@@ -161,11 +161,15 @@ zen-library-history-tweaks-section {
   margin-block: 0;
   padding-block: 0;
 
+  /*
+   * The line is a border, which is always one device pixel thick. A 1px
+   * background can cover two when the row lands between pixels.
+   */
   &::after {
     content: "";
     flex: 1;
-    height: 1px;
-    background: color-mix(in srgb, currentColor 15%, transparent);
+    height: 0;
+    border-block-start: 1px solid color-mix(in srgb, currentColor 15%, transparent);
   }
 }
 
@@ -245,13 +249,84 @@ zen-library-history-tweaks-section {
   padding-inline: 8px;
 
   &::after {
-    background: color-mix(in srgb, currentColor 40%, transparent);
+    border-block-start-color: color-mix(in srgb, currentColor 40%, transparent);
   }
 }
 
 /* On macOS the dragged row waits out of sight for the image to land on it. */
 .zen-library-row[landing] {
   visibility: hidden;
+}
+
+/* The empty slot a dragged space will land in. Placed from script. */
+.zen-library-spaces {
+  /* One origin for offsetLeft/offsetTop and the slot, and a stacking context
+     so the slot can sit at z-index -1: above the panel, below the cards. */
+  position: relative;
+  isolation: isolate;
+}
+
+.zen-library-space-drop-slot {
+  --lt-slot-color: color-mix(
+    in srgb,
+    var(--toolbox-textcolor, currentColor) 40%,
+    transparent
+  );
+
+  position: absolute;
+  z-index: -1;
+  box-sizing: border-box;
+  pointer-events: none;
+  border: 3px dashed var(--lt-slot-color);
+  border-radius: 14px; /* matches .zen-library-space */
+  background: color-mix(
+    in srgb,
+    var(--toolbox-textcolor, currentColor) 4%,
+    transparent
+  );
+  /* Same timing as the native shift of the other spaces. */
+  transition: left 0.2s ease;
+  animation: lt-space-slot-in 0.2s ease;
+}
+
+@keyframes lt-space-slot-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Switching sections */
+
+/*
+ * The section being shown rises a little as it fades in. #updateMountedSections
+ * sets [showing] and unhides it, and the edit pane is unhidden the same way, so
+ * the animation starts each time one of them comes into view. "backwards"
+ * leaves no transform behind afterwards, which would otherwise become the
+ * containing block of the fixed drop background.
+ *
+ * The fade is quicker than the rise, so the content is readable early while the
+ * movement is still settling.
+ *
+ * Controlled by the librarytweaks-content-animate pref, true unless changed.
+ */
+@media (prefers-reduced-motion: no-preference) and (-moz-pref("librarytweaks-content-animate")) {
+  zen-library[open] :is(.zen-library-section[showing], #zen-library-edit-pane:not([hidden])) {
+    animation:
+      lt-section-fade 0.18s ease-out backwards,
+      lt-section-rise 0.3s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+}
+
+@keyframes lt-section-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes lt-section-rise {
+  from {
+    translate: 0 10px;
+  }
 }
 
 /* Glance */
@@ -935,4 +1010,71 @@ zen-library-space-routing-section {
     -moz-context-properties: fill, stroke;
     mask: url("Modules/Icons/airplane.svg") center / contain no-repeat;
   }
+}
+
+/* Bookmarks: Import and Backup */
+
+/*
+ * Built like the Space Routing picker: a .zen-library-filter-button gives it the
+ * height, shape and hover of the Library's others. It only needs to fill the
+ * row and keep a background of its own.
+ */
+zen-library-bookmarks-section .zen-library-import-backup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  text-align: start;
+  cursor: pointer;
+
+  &:hover {
+    background: color-mix(in srgb, currentColor 14%, transparent);
+  }
+
+  &:is(:active, [open]) {
+    background: color-mix(in srgb, currentColor 18%, transparent);
+  }
+
+  & .zen-library-import-backup-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+/*
+ * The icon is a mask, so it follows the text color. Both images paint with
+ * context-fill, which is transparent unless the properties are passed in.
+ */
+.zen-library-import-backup-icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  background-color: currentColor;
+  -moz-context-properties: fill, stroke;
+  fill: currentColor;
+  stroke: currentColor;
+  mask: url("Modules/Icons/arrows-up-down.svg") center / contain no-repeat;
+}
+
+.zen-library-import-backup-chevron {
+  display: block;
+  flex: none;
+  align-self: center;
+  width: 12px;
+  height: 12px;
+  margin: 0;
+  padding: 0;
+  opacity: 0.6;
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
+/* The separator above the Import and Backup button is not a bookmark: no hover, no menu. */
+.zen-library-separator:has(+ .zen-library-import-backup) {
+  pointer-events: none;
 }
